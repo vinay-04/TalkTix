@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS "bookings" (
-	"id" text PRIMARY KEY DEFAULT '01JEASRVJ136RFFYDFW6G0QZ65' NOT NULL,
+	"id" text PRIMARY KEY DEFAULT '01JEBF1EYF13BRFRPD95K5KPT9' NOT NULL,
 	"user_id" text,
 	"speaker_id" text,
 	"session_start_time" timestamp NOT NULL,
@@ -8,16 +8,15 @@ CREATE TABLE IF NOT EXISTS "bookings" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "speakers" (
-	"id" text PRIMARY KEY DEFAULT '01JEASRVJ072V09R7QY3PWVE93' NOT NULL,
+	"id" text PRIMARY KEY DEFAULT '01JEBF1EYFY2XH4FJ57ZH5R93B' NOT NULL,
 	"user_id" text,
 	"price_per_session" numeric(10, 2) NOT NULL,
 	"bio" text,
-	"created_at" timestamp DEFAULT now(),
-	CONSTRAINT "speakers_user_id_unique" UNIQUE("user_id")
+	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "users" (
-	"id" text PRIMARY KEY DEFAULT '01JEASRVJ067EZBD6RPFYA7TE6' NOT NULL,
+	"id" text PRIMARY KEY DEFAULT '01JEBF1EYE27T3ZS2FPAV65Q26' NOT NULL,
 	"first_name" varchar(100) NOT NULL,
 	"last_name" varchar(100) NOT NULL,
 	"email" varchar(255) NOT NULL,

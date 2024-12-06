@@ -1,5 +1,5 @@
 {
-  "id": "80494f90-1120-45fd-a4ab-0d9f7131d724",
+  "id": "7618d1ce-fa28-4c1c-8508-15646ec7b474",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -13,7 +13,7 @@
           "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "default": "'01JEASRVJ136RFFYDFW6G0QZ65'"
+          "default": "'01JEBF1EYF13BRFRPD95K5KPT9'"
         },
         "user_id": {
           "name": "user_id",
@@ -91,7 +91,7 @@
           "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "default": "'01JEASRVJ072V09R7QY3PWVE93'"
+          "default": "'01JEBF1EYFY2XH4FJ57ZH5R93B'"
         },
         "user_id": {
           "name": "user_id",
@@ -136,15 +136,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "speakers_user_id_unique": {
-          "name": "speakers_user_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "user_id"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -158,7 +150,7 @@
           "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "default": "'01JEASRVJ067EZBD6RPFYA7TE6'"
+          "default": "'01JEBF1EYE27T3ZS2FPAV65Q26'"
         },
         "first_name": {
           "name": "first_name",

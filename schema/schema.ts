@@ -1,18 +1,20 @@
 import {
   pgTable,
-  serial,
   text,
   varchar,
   boolean,
   timestamp,
   numeric,
-  integer,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { ulid } from "ulid";
 
+const generateUlid = () => ulid();
+
 export const users = pgTable("users", {
-  id: text("id").primaryKey().default(ulid()),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => generateUlid()),
   firstName: varchar("first_name", { length: 100 }).notNull(),
   lastName: varchar("last_name", { length: 100 }).notNull(),
   email: varchar("email", { length: 255 }).unique().notNull(),
@@ -24,10 +26,10 @@ export const users = pgTable("users", {
 });
 
 export const speakers = pgTable("speakers", {
-  id: text("id").primaryKey().default(ulid()),
-  userId: text("user_id")
-    .references(() => users.id)
-    .unique(),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => generateUlid()),
+  userId: text("user_id").references(() => users.id),
   pricePerSession: numeric("price_per_session", {
     precision: 10,
     scale: 2,
@@ -37,7 +39,9 @@ export const speakers = pgTable("speakers", {
 });
 
 export const bookings = pgTable("bookings", {
-  id: text("id").primaryKey().default(ulid()),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => generateUlid()),
   userId: text("user_id").references(() => users.id),
   speakerId: text("speaker_id").references(() => speakers.id),
   sessionStartTime: timestamp("session_start_time").notNull(),
@@ -47,6 +51,7 @@ export const bookings = pgTable("bookings", {
 
 export const userRelations = relations(users, ({ many }) => ({
   bookings: many(bookings),
+  speakerProfile: many(speakers),
 }));
 
 export const speakerRelations = relations(speakers, ({ one, many }) => ({

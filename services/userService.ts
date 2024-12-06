@@ -1,12 +1,22 @@
 import { db } from "../config/db";
-import { users } from "../schema/schema";
+import { speakers, users } from "../schema/schema";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import type { UserSignupSchema, UserLoginSchema } from "../schema/zodSchemas";
 import { hashPassword } from "../utils/hashPassUtils";
+import {
+  generateOTP,
+  sendVerificationEmail,
+  storeOTP,
+  verifyOTP,
+} from "../utils/otpGenerator";
+import bcrypt from "bcrypt";
+import { JwtTokenUtils } from "../utils/jwttokenUtils";
 
 type UserSignup = z.infer<typeof UserSignupSchema>;
 type UserLogin = z.infer<typeof UserLoginSchema>;
+
+const jwtUtils = new JwtTokenUtils();
 
 export const createUser = async (userData: UserSignup) => {
   try {
@@ -28,6 +38,14 @@ export const createUser = async (userData: UserSignup) => {
         isVerified: users.isVerified,
       });
 
+    if (user.userType === "speaker") {
+      await db.insert(speakers).values({
+        userId: user.id,
+        pricePerSession: "10",
+        createdAt: new Date(),
+      });
+    }
+
     return user;
   } catch (error: unknown) {
     throw new Error(
@@ -37,30 +55,33 @@ export const createUser = async (userData: UserSignup) => {
 };
 
 export const loginUser = async ({ email, password }: UserLogin) => {
-  try {
-    const user = await getUserByEmail(email);
-    if (!user) {
-      throw new Error("Invalid credentials");
-    }
+  const user = await getUserByEmail(email);
+  if (!user) {
+    throw new Error("Invalid credentials");
+  }
 
-    const isValidPassword = (await hashPassword(password)) === user.password;
-    if (!isValidPassword) {
-      throw new Error("Invalid credentials");
-    }
+  const isValidPassword = await bcrypt.compare(password, user.password);
+  if (!isValidPassword) {
+    throw new Error("Invalid credentials");
+  }
 
-    return {
+  const token = jwtUtils.generateToken({
+    userId: user.id,
+    email: user.email,
+    role: user.userType,
+  });
+
+  return {
+    user: {
       id: user.id,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
       userType: user.userType,
       isVerified: user.isVerified,
-    };
-  } catch (error: unknown) {
-    throw new Error(
-      `Login failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-    );
-  }
+    },
+    token,
+  };
 };
 
 export const getUserById = async (id: string) => {
@@ -128,6 +149,30 @@ export const verifyUser = async (id: string) => {
   } catch (error: unknown) {
     throw new Error(
       `Error verifying user: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
+  }
+};
+
+export const sendOTP = async (userId: string) => {
+  try {
+    const user = await getUserById(userId);
+    const otp = generateOTP();
+    await storeOTP(userId, otp);
+    await sendVerificationEmail(user.email, otp);
+  } catch (error: unknown) {
+    throw new Error(
+      `Error sending OTP: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
+  }
+};
+
+export const verify = async (userId: string, otp: string) => {
+  try {
+    await verifyOTP(userId, otp);
+    return await verifyUser(userId);
+  } catch (error: unknown) {
+    throw new Error(
+      `Error verifying OTP: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   }
 };
