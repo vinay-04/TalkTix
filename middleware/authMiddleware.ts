@@ -1,4 +1,4 @@
-import type { RequestHandler, Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { JwtTokenUtils } from "../utils/jwttokenUtils";
 
 declare global {
@@ -12,29 +12,28 @@ declare global {
   }
 }
 
-export const authenticateUser: RequestHandler = (
+export const authenticateUser: (
   req: Request,
   res: Response,
   next: NextFunction,
-) => {
+) => void = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ message: "Authentication required" });
+  }
+
   try {
-    const token = req.headers.authorization?.split(" ")[1];
-
-    if (!token) {
-      // return res.status(401).json({ message: "Authentication required" });
-    }
-
-    // biome-ignore lint/style/noNonNullAssertion: <explanation>
-    const decoded = JwtTokenUtils.verifyToken(token!);
+    const decoded = JwtTokenUtils.verifyToken(token);
     req.user = {
       id: decoded.userId,
       role: decoded.role,
     };
     next();
   } catch (error) {
-    // return res.status(401).json({
-    //   message: "Invalid or expired token",
-    // });
+    return res.status(401).json({
+      message: "Invalid or expired token",
+    });
   }
 };
 

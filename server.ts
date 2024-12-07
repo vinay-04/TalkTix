@@ -7,6 +7,7 @@ import * as schema from "./schema/schema";
 import authRoutes from "./routes/authRoutes";
 import speakerRoutes from "./routes/speakerRoutes";
 import bookingRoutes from "./routes/bookingRoutes";
+import { Logger } from "./middleware/logMiddleware";
 
 dotenv.config({ path: ".env.local" });
 
@@ -17,6 +18,7 @@ app.use(express.json());
 
 const db = drizzle(pool, { schema });
 
+app.use(Logger);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/speakers", speakerRoutes);
 app.use("/api/v1/bookings", bookingRoutes);
