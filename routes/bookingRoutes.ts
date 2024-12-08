@@ -6,9 +6,22 @@ import {
   cancelBooking,
 } from "../services/bookingService";
 import { BookingCreateSchema } from "../schema/zodSchemas";
+import { authenticateUser } from "../middleware/authMiddleware";
 
 const router = express.Router();
 
+router.get("/bookings", async (req, res) => {
+  try {
+    const bookings = await getBookings();
+    res.status(200).json(bookings);
+  } catch (error) {
+    res.status(500).json({
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+});
+
+router.use(authenticateUser);
 router.post("/bookings", async (req, res) => {
   try {
     const bookingData = BookingCreateSchema.parse(req.body);
@@ -21,19 +34,6 @@ router.post("/bookings", async (req, res) => {
   }
 });
 
-router.get("/bookings", async (req, res) => {
-  try {
-    const bookings = await getBookings();
-    res.status(200).json(bookings);
-  } catch (error) {
-    res
-      .status(500)
-      .json({
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-  }
-});
-
 router.get("/bookings/:id", async (req, res) => {
   try {
     const booking = await getBookingById(req.params.id);
@@ -43,11 +43,9 @@ router.get("/bookings/:id", async (req, res) => {
       res.status(404).json({ error: "Booking not found" });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
+    res.status(500).json({
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 });
 
@@ -60,11 +58,9 @@ router.put("/bookings/:id/cancel", async (req, res) => {
       res.status(404).json({ error: "Booking not found" });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
+    res.status(500).json({
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 });
 
