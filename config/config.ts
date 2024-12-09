@@ -1,6 +1,7 @@
 import { Pool } from "pg";
 import Redis from "ioredis";
 import dotenv from "dotenv";
+import { createTransport } from "nodemailer";
 
 dotenv.config({
   path: process.env.NODE_ENV === "production" ? ".env" : ".env.local",
@@ -53,6 +54,16 @@ redis.on("connect", () => {
 
 redis.on("error", (err: Error) => {
   console.error("Redis connection error:", err);
+});
+
+export const transporter = createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT),
+  secure: true,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
 });
 
 export { pool, redis };

@@ -1,18 +1,8 @@
 import { createTransport } from "nodemailer";
-import { redis } from "../config/config";
+import { redis, transporter } from "../config/config";
 import dotenv from "dotenv";
 
 dotenv.config({ path: ".env.local" });
-
-const transporter = createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: true,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
 
 export const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -32,14 +22,14 @@ export const verifyOTP = async (userId: string, otp: string) => {
 };
 
 export const sendVerificationEmail = async (email: string, otp: string) => {
-  //   await transporter.sendMail({
-  //     to: email,
-  //     subject: "Verify Your Email",
-  //     html: `
-  //       <h1>Email Verification</h1>
-  //       <p>Your verification code is: <strong>${otp}</strong></p>
-  //       <p>This code will expire in 10 minutes.</p>
-  //     `,
-  //   });
+  await transporter.sendMail({
+    to: email,
+    subject: "Verify Your Email",
+    html: `
+        <h1>Email Verification</h1>
+        <p>Your verification code is: <strong>${otp}</strong></p>
+        <p>This code will expire in 10 minutes.</p>
+      `,
+  });
   console.log(`Email sent to ${email} with OTP: ${otp}`);
 };
