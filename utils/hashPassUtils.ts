@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import e from "express";
 
 export const hashPassword = async (password: string) => {
   try {

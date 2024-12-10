@@ -1,40 +1,85 @@
 import { z } from "zod";
 
-export const UserSignupSchema = z.object({
-  firstName: z.string().min(2, "First name must be at least 2 characters"),
-  lastName: z.string().min(2, "Last name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(
-      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
-      "Password must include letters, numbers, and special characters",
-    ),
-  userType: z.enum(["user", "speaker"]),
+const timestampSchema = z.object({
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
 });
 
-export const UserLoginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+const idSchema = z.object({
+  id: z.string().length(26),
 });
 
-export const SpeakerProfileSchema = z.object({
-  pricePerSession: z.number().positive("Price must be a positive number"),
-  bio: z.string().optional().nullable(),
+export const UserCreateSchema = z
+  .object({
+    firstName: z.string().min(2).max(100),
+    lastName: z.string().min(2).max(100),
+    email: z.string().email().max(255),
+    password: z
+      .string()
+      .min(8)
+      .max(255)
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+        "Password must contain uppercase, lowercase, number and special character",
+      ),
+    isVerified: z.boolean().default(false),
+  })
+  .merge(timestampSchema);
+
+export const UserSchema = UserCreateSchema.merge(idSchema);
+export const UserUpdateSchema = UserCreateSchema.partial();
+export const LoginSchema = z.object({
+  email: z.string().email(),
+  password: z.string(),
 });
+
+export const SpeakerCreateSchema = z
+  .object({
+    firstName: z.string().min(2).max(100),
+    lastName: z.string().min(2).max(100),
+    email: z.string().email().max(255),
+    password: z
+      .string()
+      .min(8)
+      .max(255)
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+        "Password must contain uppercase, lowercase, number and special character",
+      ),
+    isVerified: z.boolean().default(false),
+    pricePerSession: z.string().regex(/^\d+(\.\d{1,2})?$/),
+    bio: z.string().min(10).max(1000).optional(),
+  })
+  .merge(timestampSchema);
+
+export const SpeakerSchema = SpeakerCreateSchema.merge(idSchema);
+export const SpeakerUpdateSchema = SpeakerCreateSchema.partial();
 
 export const BookingCreateSchema = z
   .object({
-    speakerId: z.string(),
-    sessionStartTime: z.coerce.date(),
-    sessionEndTime: z.coerce.date(),
+    sessionStartTime: z.date(),
+    sessionEndTime: z.date(),
+    speakerIds: z.array(z.string().length(26)),
+    userIds: z.array(z.string().length(26)),
   })
-  .refine((data) => data.sessionEndTime > data.sessionStartTime, {
-    message: "End time must be after start time",
-  });
+  .merge(timestampSchema);
 
-export const BookingUpdateSchema = z.object({
-  sessionStartTime: z.coerce.date().optional(),
-  sessionEndTime: z.coerce.date().optional(),
+export const BookingSchema = BookingCreateSchema.merge(idSchema).refine(
+  (data) => data.sessionEndTime > data.sessionStartTime,
+  {
+    message: "End time must be after start time",
+    path: ["sessionEndTime"],
+  },
+);
+export const BookingUpdateSchema = BookingCreateSchema.partial();
+
+export const SpeakerBookingSchema = z.object({
+  speakerId: z.string().length(26),
+  sessionStartTime: z.string().datetime(),
+  sessionEndTime: z.string().datetime(),
+});
+
+export const UserBookingSchema = z.object({
+  bookingId: z.string().length(26),
+  userId: z.string().length(26),
 });

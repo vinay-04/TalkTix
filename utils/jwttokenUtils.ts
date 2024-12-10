@@ -5,15 +5,13 @@ dotenv.config({ path: ".env.local" });
 
 interface TokenPayload {
   userId: string;
-  email: string;
   role: string;
-  [key: string]: unknown;
 }
 
 export class JwtTokenUtils {
   private static readonly SECRET_KEY = process.env.JWT_SECRET_KEY;
 
-  generateToken(payload: TokenPayload, expiresIn = "24h"): string {
+  generateToken(payload: TokenPayload, expiresIn = "48h"): string {
     if (!JwtTokenUtils.SECRET_KEY) {
       throw new Error("JWT_SECRET_KEY is not defined");
     }

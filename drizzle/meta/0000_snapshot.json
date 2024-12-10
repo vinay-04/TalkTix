@@ -1,60 +1,34 @@
 {
-  "id": "7618d1ce-fa28-4c1c-8508-15646ec7b474",
+  "id": "f380bb42-d60f-4afa-9896-16747b5e9949",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.bookings": {
-      "name": "bookings",
+    "public.booking_speakers": {
+      "name": "booking_speakers",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "'01JEBF1EYF13BRFRPD95K5KPT9'"
-        },
-        "user_id": {
-          "name": "user_id",
+        "slot_id": {
+          "name": "slot_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "speaker_id": {
           "name": "speaker_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
-        },
-        "session_start_time": {
-          "name": "session_start_time",
-          "type": "timestamp",
-          "primaryKey": false,
           "notNull": true
-        },
-        "session_end_time": {
-          "name": "session_end_time",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "bookings_user_id_users_id_fk": {
-          "name": "bookings_user_id_users_id_fk",
-          "tableFrom": "bookings",
-          "tableTo": "users",
+        "booking_speakers_slot_id_bookings_id_fk": {
+          "name": "booking_speakers_slot_id_bookings_id_fk",
+          "tableFrom": "booking_speakers",
+          "tableTo": "bookings",
           "columnsFrom": [
-            "user_id"
+            "slot_id"
           ],
           "columnsTo": [
             "id"
@@ -62,9 +36,9 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "bookings_speaker_id_speakers_id_fk": {
-          "name": "bookings_speaker_id_speakers_id_fk",
-          "tableFrom": "bookings",
+        "booking_speakers_speaker_id_speakers_id_fk": {
+          "name": "booking_speakers_speaker_id_speakers_id_fk",
+          "tableFrom": "booking_speakers",
           "tableTo": "speakers",
           "columnsFrom": [
             "speaker_id"
@@ -82,48 +56,41 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.speakers": {
-      "name": "speakers",
+    "public.booking_users": {
+      "name": "booking_users",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "slot_id": {
+          "name": "slot_id",
           "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "'01JEBF1EYFY2XH4FJ57ZH5R93B'"
+          "primaryKey": false,
+          "notNull": true
         },
         "user_id": {
           "name": "user_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
-        },
-        "price_per_session": {
-          "name": "price_per_session",
-          "type": "numeric(10, 2)",
-          "primaryKey": false,
           "notNull": true
-        },
-        "bio": {
-          "name": "bio",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "speakers_user_id_users_id_fk": {
-          "name": "speakers_user_id_users_id_fk",
-          "tableFrom": "speakers",
+        "booking_users_slot_id_bookings_id_fk": {
+          "name": "booking_users_slot_id_bookings_id_fk",
+          "tableFrom": "booking_users",
+          "tableTo": "bookings",
+          "columnsFrom": [
+            "slot_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "booking_users_user_id_users_id_fk": {
+          "name": "booking_users_user_id_users_id_fk",
+          "tableFrom": "booking_users",
           "tableTo": "users",
           "columnsFrom": [
             "user_id"
@@ -141,16 +108,53 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.users": {
-      "name": "users",
+    "public.bookings": {
+      "name": "bookings",
       "schema": "",
       "columns": {
         "id": {
           "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "default": "'01JEBF1EYE27T3ZS2FPAV65Q26'"
+          "notNull": true
+        },
+        "start_time": {
+          "name": "start_time",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "end_time": {
+          "name": "end_time",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.speakers": {
+      "name": "speakers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
         },
         "first_name": {
           "name": "first_name",
@@ -176,9 +180,87 @@
           "primaryKey": false,
           "notNull": true
         },
-        "user_type": {
-          "name": "user_type",
+        "is_verified": {
+          "name": "is_verified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "price_per_session": {
+          "name": "price_per_session",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bio": {
+          "name": "bio",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "speakers_email_unique": {
+          "name": "speakers_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.users": {
+      "name": "users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "first_name": {
+          "name": "first_name",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_name": {
+          "name": "last_name",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "password": {
+          "name": "password",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
         },

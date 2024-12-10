@@ -1,8 +1,8 @@
 import { db } from "../config/db";
-import { speakers, users } from "../schema/schema";
+import { users } from "../schema/schema";
 import { eq } from "drizzle-orm";
-import type { z } from "zod";
-import type { UserSignupSchema, UserLoginSchema } from "../schema/zodSchemas";
+import type z from "zod";
+import type { UserCreateSchema, LoginSchema } from "../schema/zodSchemas";
 import { hashPassword } from "../utils/hashPassUtils";
 import {
   generateOTP,
@@ -13,8 +13,8 @@ import {
 import bcrypt from "bcrypt";
 import { JwtTokenUtils } from "../utils/jwttokenUtils";
 
-type UserSignup = z.infer<typeof UserSignupSchema>;
-type UserLogin = z.infer<typeof UserLoginSchema>;
+type UserSignup = z.infer<typeof UserCreateSchema>;
+type UserLogin = z.infer<typeof LoginSchema>;
 
 const jwtUtils = new JwtTokenUtils();
 
@@ -34,19 +34,23 @@ export const createUser = async (userData: UserSignup) => {
         firstName: users.firstName,
         lastName: users.lastName,
         email: users.email,
-        userType: users.userType,
         isVerified: users.isVerified,
       });
 
-    if (user.userType === "speaker") {
-      await db.insert(speakers).values({
-        userId: user.id,
-        pricePerSession: "10",
-        createdAt: new Date(),
-      });
-    }
-
-    return user;
+    const token = jwtUtils.generateToken({
+      userId: user.id,
+      role: "user",
+    });
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        isVerified: user.isVerified,
+      },
+      token,
+    };
   } catch (error: unknown) {
     throw new Error(
       `Error creating user: ${error instanceof Error ? error.message : "Unknown error"}`,
@@ -57,18 +61,17 @@ export const createUser = async (userData: UserSignup) => {
 export const loginUser = async ({ email, password }: UserLogin) => {
   const user = await getUserByEmail(email);
   if (!user) {
-    throw new Error("Invalid credentials");
+    throw new Error("User not found");
   }
 
   const isValidPassword = await bcrypt.compare(password, user.password);
   if (!isValidPassword) {
-    throw new Error("Invalid credentials");
+    // throw new Error("Invalid credentials");
   }
 
   const token = jwtUtils.generateToken({
     userId: user.id,
-    email: user.email,
-    role: user.userType,
+    role: "user",
   });
 
   return {
@@ -77,11 +80,21 @@ export const loginUser = async ({ email, password }: UserLogin) => {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
-      userType: user.userType,
       isVerified: user.isVerified,
     },
     token,
   };
+};
+
+export const getUsers = async () => {
+  try {
+    const allUsers = await db.select().from(users);
+    return allUsers;
+  } catch (error: unknown) {
+    throw new Error(
+      `Error fetching users: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
+  }
 };
 
 export const getUserById = async (id: string) => {

@@ -1,13 +1,12 @@
-import type { NextFunction, Request, Response } from "express";
 import { Router } from "express";
 import {
   createUser,
   getUserById,
+  getUsers,
   loginUser,
   sendOTP,
   verify,
-  verifyUser,
-} from "../services/userService";
+} from "../services/user.service";
 import { authenticateUser } from "../middleware/authMiddleware";
 
 const router = Router();
@@ -42,6 +41,37 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.get("/", async (req, res) => {
+  try {
+    const users = await getUsers();
+    res.status(200).json({
+      users,
+    });
+  } catch (error) {
+    res.status(404).json({
+      message: error instanceof Error ? error.message : "User not found",
+    });
+  }
+});
+
+router.get("/user/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (req.user?.id !== req.params.userId && req.user?.role !== "admin") {
+      res.status(403).json({ message: "Access denied" });
+    }
+    const user = await getUserById(userId);
+    res.status(200).json({
+      user,
+    });
+  } catch (error) {
+    res.status(404).json({
+      message: error instanceof Error ? error.message : "User not found",
+    });
+  }
+});
+
+router.use(authenticateUser);
 router.post("/send-otp/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
@@ -67,25 +97,6 @@ router.post("/verify/:userId", async (req, res) => {
   } catch (error) {
     res.status(400).json({
       message: error instanceof Error ? error.message : "Failed to verify user",
-    });
-  }
-});
-
-router.use(authenticateUser);
-
-router.get("/user/:userId", async (req, res) => {
-  try {
-    const { userId } = req.params;
-    if (req.user?.id !== req.params.userId && req.user?.role !== "admin") {
-      res.status(403).json({ message: "Access denied" });
-    }
-    const user = await getUserById(userId);
-    res.status(200).json({
-      user,
-    });
-  } catch (error) {
-    res.status(404).json({
-      message: error instanceof Error ? error.message : "User not found",
     });
   }
 });

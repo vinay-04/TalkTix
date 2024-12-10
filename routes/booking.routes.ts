@@ -4,13 +4,13 @@ import {
   getBookings,
   getBookingById,
   cancelBooking,
-} from "../services/bookingService";
+} from "../services/booking.service";
 import { BookingCreateSchema } from "../schema/zodSchemas";
 import { authenticateUser } from "../middleware/authMiddleware";
 
 const router = express.Router();
 
-router.get("/bookings", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const bookings = await getBookings();
     res.status(200).json(bookings);
@@ -21,27 +21,11 @@ router.get("/bookings", async (req, res) => {
   }
 });
 
-router.use(authenticateUser);
-router.post("/bookings", async (req, res) => {
+router.get("/:bookingId", async (req, res) => {
   try {
-    const bookingData = BookingCreateSchema.parse(req.body);
-    const booking = await createBooking(bookingData);
-    res.status(201).json(booking);
-  } catch (error) {
-    res.status(400).json({
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
-  }
-});
-
-router.get("/bookings/:id", async (req, res) => {
-  try {
-    const booking = await getBookingById(req.params.id);
-    if (booking) {
-      res.status(200).json(booking);
-    } else {
-      res.status(404).json({ error: "Booking not found" });
-    }
+    const { bookingId } = req.params;
+    const booking = await getBookingById(bookingId);
+    res.status(200).json(booking);
   } catch (error) {
     res.status(500).json({
       error: error instanceof Error ? error.message : "Unknown error",
@@ -49,14 +33,25 @@ router.get("/bookings/:id", async (req, res) => {
   }
 });
 
-router.put("/bookings/:id/cancel", async (req, res) => {
+router.post("/create", authenticateUser, async (req, res) => {
   try {
-    const booking = await cancelBooking(req.params.id);
-    if (booking) {
-      res.status(200).json(booking);
-    } else {
-      res.status(404).json({ error: "Booking not found" });
-    }
+    const bookingData = BookingCreateSchema.parse(req.body);
+    const booking = await createBooking(bookingData);
+    res.status(201).json(booking);
+  } catch (error) {
+    res.status(500).json({
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+});
+
+router.post("/cancel/:bookingId", authenticateUser, async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    await cancelBooking(bookingId);
+    res.status(200).json({
+      message: "Booking cancelled successfully",
+    });
   } catch (error) {
     res.status(500).json({
       error: error instanceof Error ? error.message : "Unknown error",
