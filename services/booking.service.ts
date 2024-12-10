@@ -11,7 +11,8 @@ export const createBooking = async (bookingData: BookingCreateSchemaType) => {
     const [booking] = await db
       .insert(bookings)
       .values({
-        ...bookingData,
+        sessionStartTime: bookingData.sessionStartTime,
+        sessionEndTime: bookingData.sessionEndTime,
         createdAt: new Date(),
       })
       .returning({
@@ -53,11 +54,25 @@ export const getBookingById = async (id: string) => {
   }
 };
 
+export const checkStartTime = async (startTime: Date): Promise<boolean> => {
+  try {
+    const booking = await db
+      .select()
+      .from(bookings)
+      .where(eq(bookings.sessionStartTime, startTime))
+      .limit(1);
+    return booking.length > 0;
+  } catch (error: unknown) {
+    throw new Error(
+      `Error fetching booking: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
+  }
+};
+
 export const cancelBooking = async (id: string) => {
   try {
     const [booking] = await db
-      .update(bookings)
-      .set({ sessionEndTime: new Date() })
+      .delete(bookings)
       .where(eq(bookings.id, id))
       .returning();
     return booking;

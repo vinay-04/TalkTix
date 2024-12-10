@@ -12,8 +12,13 @@ const requiredEnvVars = [
   "POSTGRES_USER",
   "POSTGRES_PASSWORD",
   "POSTGRES_DB",
+  "POSTGRES_PORT",
   "REDIS_HOST",
   "REDIS_PORT",
+  "SMTP_HOST",
+  "SMTP_PORT",
+  "SMTP_USER",
+  "SMTP_PASS",
 ] as const;
 
 for (const envVar of requiredEnvVars) {
@@ -21,6 +26,8 @@ for (const envVar of requiredEnvVars) {
     throw new Error(`Missing required environment variable: ${envVar}`);
   }
 }
+
+console.log("Environment variables loaded successfully");
 
 const pool = new Pool({
   host: process.env.POSTGRES_HOST,
@@ -37,6 +44,10 @@ pool.on("connect", () => {
 pool.on("error", (err) => {
   console.error("PostgreSQL connection error:", err);
   process.exit(1);
+});
+
+pool.connect().catch((err) => {
+  console.error("Failed to connect to PostgreSQL:", err);
 });
 
 const redis = new Redis({
