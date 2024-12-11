@@ -1,10 +1,10 @@
 import {
+  boolean,
+  numeric,
   pgTable,
   text,
-  varchar,
-  boolean,
   timestamp,
-  numeric,
+  varchar,
 } from "drizzle-orm/pg-core";
 import { ulid } from "ulid";
 

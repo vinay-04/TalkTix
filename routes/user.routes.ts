@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { authenticateUser } from "../middleware/authMiddleware";
 import {
   createUser,
   getUserById,
@@ -7,10 +8,66 @@ import {
   sendOTP,
   verify,
 } from "../services/user.service";
-import { authenticateUser } from "../middleware/authMiddleware";
 
 const router = Router();
 
+/**
+ * @swagger
+ * /api/v1/user/signup:
+ *   post:
+ *     summary: Sign up a new user
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 description: The username of the user
+ *               email:
+ *                 type: string
+ *                 description: The email of the user
+ *               password:
+ *                 type: string
+ *                 description: The password for the user
+ *             required:
+ *               - username
+ *               - email
+ *               - password
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: User created successfully
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     username:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *       400:
+ *         description: Failed to create user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Failed to create user
+ */
 router.post("/signup", async (req, res) => {
   try {
     const user = await createUser(req.body);
@@ -25,6 +82,62 @@ router.post("/signup", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/v1/user/login:
+ *   post:
+ *     summary: Log in an existing user
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: The email of the user
+ *               password:
+ *                 type: string
+ *                 description: The password of the user
+ *             required:
+ *               - email
+ *               - password
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Login successful
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     username:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                 token:
+ *                   type: string
+ *                   description: Authentication token
+ *       401:
+ *         description: Login failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Login failed
+ */
 router.post("/login", async (req, res) => {
   try {
     const { user, token } = await loginUser(req.body);
@@ -41,6 +154,34 @@ router.post("/login", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/v1/user:
+ *   get:
+ *     summary: Get all users
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: List of users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 users:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       username:
+ *                         type: string
+ *                       email:
+ *                         type: string
+ *       404:
+ *         description: Users not found
+ */
 router.get("/", async (req, res) => {
   try {
     const users = await getUsers();
@@ -54,7 +195,42 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/user/:userId", async (req, res) => {
+/**
+ * @swagger
+ * /api/v1/user/{userId}:
+ *   get:
+ *     summary: Get a user by their ID
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The user ID
+ *     responses:
+ *       200:
+ *         description: User details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     username:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *       403:
+ *         description: Access denied
+ *       404:
+ *         description: User not found
+ */
+router.get("/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
     if (req.user?.id !== req.params.userId && req.user?.role !== "admin") {
@@ -72,6 +248,33 @@ router.get("/user/:userId", async (req, res) => {
 });
 
 router.use(authenticateUser);
+/**
+ * @swagger
+ * /api/v1/user/send-otp/{userId}:
+ *   post:
+ *     summary: Send an OTP to the user
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The user ID
+ *     responses:
+ *       200:
+ *         description: OTP sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: OTP sent successfully
+ *       400:
+ *         description: Failed to send OTP
+ */
 router.post("/send-otp/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
@@ -86,6 +289,43 @@ router.post("/send-otp/:userId", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/v1/user/verify/{userId}:
+ *   post:
+ *     summary: Verify the user using OTP
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The user ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               otp:
+ *                 type: string
+ *                 description: The OTP code
+ *     responses:
+ *       200:
+ *         description: User verified successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: User verified successfully
+ *       400:
+ *         description: Failed to verify user
+ */
 router.post("/verify/:userId", async (req, res) => {
   try {
     const { userId } = req.params;

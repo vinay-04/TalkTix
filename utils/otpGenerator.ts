@@ -1,6 +1,6 @@
+import dotenv from "dotenv";
 import { createTransport } from "nodemailer";
 import { redis, transporter } from "../config/config";
-import dotenv from "dotenv";
 
 dotenv.config({ path: ".env.local" });
 

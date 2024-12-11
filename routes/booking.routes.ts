@@ -1,13 +1,13 @@
 import express from "express";
-import {
-  createBooking,
-  getBookings,
-  getBookingById,
-  cancelBooking,
-} from "../services/booking.service";
-import { BookingCreateSchema } from "../schema/zodSchemas";
-import { authenticateUser } from "../middleware/authMiddleware";
 import { redis } from "../config/config";
+import { authenticateUser } from "../middleware/authMiddleware";
+import { BookingCreateSchema } from "../schema/zodSchemas";
+import {
+  cancelBooking,
+  createBooking,
+  getBookingById,
+  getBookings,
+} from "../services/booking.service";
 
 const router = express.Router();
 
@@ -24,6 +24,40 @@ const sendResponse = <T>(
   console.error("Attempted to send multiple responses");
   return null;
 };
+
+/**
+ * @swagger
+ * tags:
+ *   name: Bookings
+ *   description: API for managing bookings
+ */
+
+/**
+ * @swagger
+ * /api/v1/bookings:
+ *   get:
+ *     summary: Retrieve all bookings
+ *     tags: [Bookings]
+ *     responses:
+ *       200:
+ *         description: A list of bookings
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   bookingId:
+ *                     type: string
+ *                   customerName:
+ *                     type: string
+ *                   date:
+ *                     type: string
+ *                     format: date
+ *       500:
+ *         description: Internal server error
+ */
 
 router.get("/", async (req, res) => {
   const cacheKey = generateCacheKey("all");
@@ -55,6 +89,39 @@ router.get("/", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/v1/bookings/{bookingId}:
+ *   get:
+ *     summary: Retrieve a specific booking by ID
+ *     tags: [Bookings]
+ *     parameters:
+ *       - in: path
+ *         name: bookingId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The booking ID
+ *     responses:
+ *       200:
+ *         description: A specific booking
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 bookingId:
+ *                   type: string
+ *                 customerName:
+ *                   type: string
+ *                 date:
+ *                   type: string
+ *                   format: date
+ *       404:
+ *         description: Booking not found
+ *       500:
+ *         description: Internal server error
+ */
 router.get("/:bookingId", async (req, res) => {
   const { bookingId } = req.params;
   const cacheKey = generateCacheKey(bookingId);
@@ -125,6 +192,66 @@ router.post("/", authenticateUser, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/v1/bookings/create:
+ *   post:
+ *     summary: Create a new booking
+ *     tags: [Bookings]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               customerName:
+ *                 type: string
+ *                 description: The name of the customer making the booking
+ *               date:
+ *                 type: string
+ *                 format: date
+ *                 description: The date of the booking
+ *
+ *             required:
+ *               - customerName
+ *               - date
+ *     responses:
+ *       201:
+ *         description: The created booking
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 bookingId:
+ *                   type: string
+ *                 customerName:
+ *                   type: string
+ *                 date:
+ *                   type: string
+ *                   format: date
+ *       400:
+ *         description: Bad Request (e.g., invalid input)
+ *       500:
+ *         description: Internal server error
+ */
+router.post("/create", authenticateUser, async (req, res) => {
+  try {
+    const bookingData = BookingCreateSchema.parse(req.body);
+
+    const booking = await createBooking(bookingData);
+
+    await invalidateBookingCache();
+
+    sendResponse(res, 201, booking);
+  } catch (error) {
+    sendResponse(res, 500, {
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+});
+
 router.post("/create", authenticateUser, async (req, res) => {
   try {
     const bookingData = BookingCreateSchema.parse(req.body);
@@ -139,6 +266,25 @@ router.post("/create", authenticateUser, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/v1/bookings/cancel/{bookingId}:
+ *   post:
+ *     summary: Cancel a booking by ID
+ *     tags: [Bookings]
+ *     parameters:
+ *       - in: path
+ *         name: bookingId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The booking ID to cancel
+ *     responses:
+ *       200:
+ *         description: Booking cancelled successfully
+ *       500:
+ *         description: Internal server error
+ */
 router.post("/cancel/:bookingId", authenticateUser, async (req, res) => {
   try {
     const { bookingId } = req.params;

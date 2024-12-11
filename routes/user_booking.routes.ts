@@ -1,18 +1,51 @@
 import e, { Router } from "express";
+import { authenticateUser } from "../middleware/authMiddleware";
+import { getBookingById } from "../services/booking.service";
 import {
   deleteUserBooking,
   getUserBookings,
   userBooking,
 } from "../services/booking_users.service";
-import { authenticateUser } from "../middleware/authMiddleware";
-import { sendEmailNotification } from "../utils/emailUtils";
 import { getUserById } from "../services/user.service";
-import { getBookingById } from "../services/booking.service";
 import { sendCalendarInvite } from "../utils/calendarUtils";
+import { sendEmailNotification } from "../utils/emailUtils";
 
 const router = Router();
 
 router.use(authenticateUser);
+
+/**
+ * @swagger
+ * /api/v1/user-booking:
+ *   get:
+ *     summary: Get all bookings for a user
+ *     tags: [Bookings]
+ *     responses:
+ *       200:
+ *         description: List of user bookings
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 bookings:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       bookingId:
+ *                         type: string
+ *                       sessionStartTime:
+ *                         type: string
+ *                       sessionEndTime:
+ *                         type: string
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Only users can access their bookings
+ *       404:
+ *         description: Bookings not found
+ */
 router.get("/bookings", async (req, res) => {
   try {
     if (!req.user) {
@@ -40,6 +73,46 @@ router.get("/bookings", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/v1/user-booking:
+ *   post:
+ *     summary: Create a new booking for the user
+ *     tags: [Bookings]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               sessionId:
+ *                 type: string
+ *               sessionStartTime:
+ *                 type: string
+ *               sessionEndTime:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Booking created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 bookingId:
+ *                   type: string
+ *                 sessionStartTime:
+ *                   type: string
+ *                 sessionEndTime:
+ *                   type: string
+ *       400:
+ *         description: Failed to create booking
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Only users can create bookings
+ */
 router.post("/book", async (req, res) => {
   try {
     if (!req.user) {
@@ -76,6 +149,29 @@ router.post("/book", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/v1/user-booking:
+ *   post:
+ *     summary: Delete a user booking
+ *     tags: [Bookings]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               bookingId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Booking deleted successfully
+ *       400:
+ *         description: Failed to delete booking
+ *       401:
+ *         description: Authentication required
+ */
 router.post("/delete", async (req, res) => {
   try {
     if (!req.user) {

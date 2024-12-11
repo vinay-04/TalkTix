@@ -1,9 +1,9 @@
-import type z from "zod";
-import type { SpeakerBookingSchema } from "../schema/zodSchemas";
-import { bookings, bookingSpeakers } from "../schema/schema";
-import { db } from "../config/db";
-import { checkStartTime } from "./booking.service";
 import { eq } from "drizzle-orm";
+import type z from "zod";
+import { db } from "../config/db";
+import { bookingSpeakers, bookings } from "../schema/schema";
+import type { SpeakerBookingSchema } from "../schema/zodSchemas";
+import { checkStartTime } from "./booking.service";
 
 type SpeakerBookingSchemaType = z.infer<typeof SpeakerBookingSchema>;
 

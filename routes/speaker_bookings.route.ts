@@ -1,18 +1,49 @@
 import { Router } from "express";
+import { authenticateUser } from "../middleware/authMiddleware";
+import { getBookingById } from "../services/booking.service";
 import {
   deleteSpeakerBooking,
   getSpeakerBookings,
   speakerBooking,
 } from "../services/booking_speaker.service";
-import { authenticateUser } from "../middleware/authMiddleware";
 import { getSpeakerById } from "../services/speaker.service";
-import { sendEmailNotification } from "../utils/emailUtils";
-import { getBookingById } from "../services/booking.service";
 import { sendCalendarInvite } from "../utils/calendarUtils";
+import { sendEmailNotification } from "../utils/emailUtils";
 
 const router = Router();
 
 router.use(authenticateUser);
+
+/**
+ * @swagger
+ * /api/v1/speaker-booking:
+ *   get:
+ *     summary: Get all bookings for a speaker
+ *     tags: [Bookings]
+ *     responses:
+ *       200:
+ *         description: List of speaker bookings
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 bookings:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       bookingId:
+ *                         type: string
+ *                       sessionStartTime:
+ *                         type: string
+ *                       sessionEndTime:
+ *                         type: string
+ *       401:
+ *         description: Authentication required
+ *       404:
+ *         description: Bookings not found
+ */
 router.get("/bookings", async (req, res) => {
   try {
     if (!req.user) {
@@ -33,7 +64,45 @@ router.get("/bookings", async (req, res) => {
   }
 });
 
-router.post("/book", async (req, res) => {
+/**
+ * @swagger
+ * /api/v1/speaker-booking:
+ *   post:
+ *     summary: Create a new booking for the speaker
+ *     tags: [Bookings]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               sessionStartTime:
+ *                 type: string
+ *               sessionEndTime:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Booking created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 bookingId:
+ *                   type: string
+ *                 sessionStartTime:
+ *                   type: string
+ *                 sessionEndTime:
+ *                   type: string
+ *       400:
+ *         description: Booking time should be between 9am to 4pm and in one-hour duration
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Only speakers can create bookings
+ */
+router.post("/api/v1/speaker-booking", async (req, res) => {
   try {
     if (!req.user) {
       res.status(401).json({
@@ -92,6 +161,38 @@ router.post("/book", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/v1/speaker-booking:
+ *   post:
+ *     summary: Delete a booking for the speaker
+ *     tags: [Bookings]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               bookingId:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Booking deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 bookingId:
+ *                   type: string
+ *       400:
+ *         description: Failed to delete booking
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Only speakers can delete bookings
+ */
 router.post("/delete", async (req, res) => {
   try {
     if (!req.user) {

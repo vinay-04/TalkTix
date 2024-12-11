@@ -1,17 +1,17 @@
-import { db } from "../config/db";
-import { users } from "../schema/schema";
+import bcrypt from "bcrypt";
 import { eq } from "drizzle-orm";
 import type z from "zod";
-import type { UserCreateSchema, LoginSchema } from "../schema/zodSchemas";
+import { db } from "../config/db";
+import { users } from "../schema/schema";
+import type { LoginSchema, UserCreateSchema } from "../schema/zodSchemas";
 import { hashPassword } from "../utils/hashPassUtils";
+import { JwtTokenUtils } from "../utils/jwttokenUtils";
 import {
   generateOTP,
   sendVerificationEmail,
   storeOTP,
   verifyOTP,
 } from "../utils/otpGenerator";
-import bcrypt from "bcrypt";
-import { JwtTokenUtils } from "../utils/jwttokenUtils";
 
 type UserSignup = z.infer<typeof UserCreateSchema>;
 type UserLogin = z.infer<typeof LoginSchema>;

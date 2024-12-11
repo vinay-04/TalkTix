@@ -27,12 +27,8 @@
           "name": "booking_speakers_slot_id_bookings_id_fk",
           "tableFrom": "booking_speakers",
           "tableTo": "bookings",
-          "columnsFrom": [
-            "slot_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["slot_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -40,12 +36,8 @@
           "name": "booking_speakers_speaker_id_speakers_id_fk",
           "tableFrom": "booking_speakers",
           "tableTo": "speakers",
-          "columnsFrom": [
-            "speaker_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["speaker_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -79,12 +71,8 @@
           "name": "booking_users_slot_id_bookings_id_fk",
           "tableFrom": "booking_users",
           "tableTo": "bookings",
-          "columnsFrom": [
-            "slot_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["slot_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -92,12 +80,8 @@
           "name": "booking_users_user_id_users_id_fk",
           "tableFrom": "booking_users",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -221,9 +205,7 @@
         "speakers_email_unique": {
           "name": "speakers_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -293,9 +275,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},

@@ -1,8 +1,8 @@
-import type { z } from "zod";
-import type { BookingCreateSchema } from "../schema/zodSchemas";
-import { bookings } from "../schema/schema";
-import { db } from "../config/db";
 import { eq } from "drizzle-orm";
+import type { z } from "zod";
+import { db } from "../config/db";
+import { bookings } from "../schema/schema";
+import type { BookingCreateSchema } from "../schema/zodSchemas";
 
 type BookingCreateSchemaType = z.infer<typeof BookingCreateSchema>;
 

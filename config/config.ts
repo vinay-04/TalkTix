@@ -1,7 +1,7 @@
-import { Pool } from "pg";
-import Redis from "ioredis";
 import dotenv from "dotenv";
+import Redis from "ioredis";
 import { createTransport } from "nodemailer";
+import { Pool } from "pg";
 
 dotenv.config({
   path: process.env.NODE_ENV === "production" ? ".env" : ".env.local",
@@ -77,4 +77,18 @@ export const transporter = createTransport({
   },
 });
 
-export { pool, redis };
+const swaggerDefinition = {
+  openapi: "3.0.0",
+  info: {
+    title: "TalkTix API",
+    version: "1.0.0",
+    description: "This is the API documentation",
+  },
+  servers: [
+    {
+      url: "http://localhost:3000",
+    },
+  ],
+};
+
+export { pool, redis, swaggerDefinition };

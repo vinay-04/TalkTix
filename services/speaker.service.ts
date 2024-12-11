@@ -1,17 +1,17 @@
-import { db } from "../config/db";
-import { speakers } from "../schema/schema";
+import bcrypt from "bcrypt";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
+import { db } from "../config/db";
+import { speakers } from "../schema/schema";
 import type { LoginSchema, SpeakerCreateSchema } from "../schema/zodSchemas";
-import bcrypt from "bcrypt";
 import { hashPassword } from "../utils/hashPassUtils";
+import { JwtTokenUtils } from "../utils/jwttokenUtils";
 import {
   generateOTP,
   sendVerificationEmail,
   storeOTP,
   verifyOTP,
 } from "../utils/otpGenerator";
-import { JwtTokenUtils } from "../utils/jwttokenUtils";
 
 type SpeakerProfile = z.infer<typeof SpeakerCreateSchema>;
 type SpeakerLogin = z.infer<typeof LoginSchema>;

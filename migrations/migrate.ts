@@ -1,10 +1,10 @@
+import { existsSync } from "node:fs";
+import { mkdir } from "node:fs/promises";
+import path from "node:path";
+import dotenv from "dotenv";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Pool } from "pg";
-import dotenv from "dotenv";
-import { mkdir } from "node:fs/promises";
-import { existsSync } from "node:fs";
-import path from "node:path";
 
 dotenv.config({ path: ".env.local" });
 
